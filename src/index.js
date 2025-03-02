@@ -1,17 +1,23 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const mongoose = require('mongoose');
-
+import express from 'express';
+import dotenv from 'dotenv';
 dotenv.config();
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+
+import routes from './routes/indexRoute.js';
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+app.use(bodyParser.json());
+
+routes(app);
 
 app.get('/', (req, res) => {
     return res.send('Hello World!');
 });
 
-mongoose.connect(`mongodb+srv://ndkhanh2101362:${process.env.MONGOOSE_DB}@k-shop.jr0oq.mongodb.net/`)
+mongoose.connect(`${process.env.MONGOOSE_DB}`)
     .then(() => {
         console.log('Connected to MongoDB succeesfully');
     })
