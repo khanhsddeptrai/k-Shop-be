@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
     {
@@ -21,18 +21,18 @@ const UserSchema = new mongoose.Schema(
         role: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Role',
-            required: true,
+
         },
         avatar: {
             type: String
         },
         access_token: {
             type: String,
-            required: true
+
         },
         refresh_token: {
             type: String,
-            required: true
+
         }
     },
     {
@@ -41,4 +41,4 @@ const UserSchema = new mongoose.Schema(
 );
 
 const User = mongoose.model('User', UserSchema);
-module.exports = User;
+export default User;

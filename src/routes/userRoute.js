@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import userController from '../controllers/userController.js';
 
-router.post('/', userController.createUser);
+router.post('/sign-up', userController.createUser);
+router.post('/sign-in', userController.login);
 
 export default router;
