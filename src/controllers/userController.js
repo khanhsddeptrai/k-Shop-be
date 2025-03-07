@@ -1,6 +1,6 @@
-import { createNewUser, loginUser } from "../services/userService.js";
+import userService from "../services/userService.js";
 
-const createUser = async (req, res) => {
+const create = async (req, res) => {
     try {
         const { name, email, password, confirmPassword, phone } = req.body;
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -23,7 +23,7 @@ const createUser = async (req, res) => {
             })
         }
 
-        const data = await createNewUser(req.body);
+        const data = await userService.createUser(req.body);
         return res.status(200).json(data)
 
     } catch (error) {
@@ -51,7 +51,7 @@ const login = async (req, res) => {
             })
         }
 
-        const respone = await loginUser(req.body);
+        const respone = await userService.loginUser(req.body);
         return res.status(200).json(respone)
 
     } catch (error) {
@@ -61,4 +61,86 @@ const login = async (req, res) => {
     }
 }
 
-export default { createUser, login };
+const update = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const data = req.body;
+        if (!userId) {
+            return res.status(200).json({
+                status: "Lỗi!",
+                message: "Không tìm thấy thông tin người dùng"
+            })
+        }
+        const respone = await userService.updateUser(userId, data)
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+            data: respone.data
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
+const deleteUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(200).json({
+                status: "Lỗi!",
+                message: "Không tìm thấy thông tin người dùng"
+            })
+        }
+        const respone = await userService.deleteAUser(userId)
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
+const getAllUser = async (req, res) => {
+    try {
+        const respone = await userService.getAll()
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+            data: respone.data
+        })
+
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
+const getDetailUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(200).json({
+                status: "Lỗi!",
+                message: "Không tìm thấy thông tin người dùng"
+            })
+        }
+        const respone = await userService.getDetail(userId)
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+            data: respone.data
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
+export default { create, login, update, deleteUser, getAllUser, getDetailUser };
