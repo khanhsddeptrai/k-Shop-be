@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const DiscountSchema = new mongoose.Schema(
     {
@@ -21,4 +21,4 @@ const DiscountSchema = new mongoose.Schema(
 );
 
 const Discount = mongoose.model('Discount', DiscountSchema);
-module.exports = Discount;
+export default Discount;

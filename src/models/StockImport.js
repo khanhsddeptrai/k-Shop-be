@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const StockImportSchema = new mongoose.Schema(
     {
@@ -26,4 +26,4 @@ const StockImportSchema = new mongoose.Schema(
 );
 
 const StockImport = mongoose.model('StockImport', StockImportSchema);
-module.exports = StockImport;
+export default StockImport;

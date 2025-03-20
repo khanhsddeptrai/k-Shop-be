@@ -2,7 +2,7 @@ import User from '../models/UserModel.js';
 import Role from '../models/RoleModel.js';
 import bcrypt from 'bcrypt';
 
-import { genneralAccessToken } from './jwtService.js';
+import { genneralAccessToken, genneralRefreshToken } from './jwtService.js';
 
 const createUser = async (inputUser) => {
     const { name, email, password, confirmPassword, phone } = inputUser;
@@ -69,11 +69,17 @@ const loginUser = async (inputUser) => {
             id: checkUser.id,
             role: checkUser.role.name
         })
-        console.log("access_token", access_token);
+
+        const refresh_token = await genneralRefreshToken({
+            id: checkUser.id,
+            role: checkUser.role.name
+        })
+
         return {
             status: "success",
             message: "Đăng nhập thành công",
-            access_token: access_token
+            access_token: access_token,
+            refresh_token: refresh_token
         }
 
     } catch (error) {
@@ -170,4 +176,9 @@ const getDetail = async (id) => {
     }
 }
 
-export default { createUser, loginUser, updateUser, deleteAUser, getAll, getDetail };
+
+
+export default {
+    createUser, loginUser, updateUser, deleteAUser, getAll, getDetail,
+
+};

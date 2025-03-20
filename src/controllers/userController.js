@@ -1,4 +1,5 @@
 import userService from "../services/userService.js";
+import { refreshTokenJwtService } from "../services/jwtService.js";
 
 const create = async (req, res) => {
     try {
@@ -143,4 +144,26 @@ const getDetailUser = async (req, res) => {
     }
 }
 
-export default { create, login, update, deleteUser, getAllUser, getDetailUser };
+const refreshToken = async (req, res) => {
+    try {
+        const token = req.headers.token.split(' ')[1]
+        if (!token) {
+            return res.status(200).json({
+                status: "Lỗi!",
+                message: "The token is required"
+            })
+        }
+        const respone = await refreshTokenJwtService(token)
+        return res.status(200).json(respone)
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
+export default {
+    create, login, update, deleteUser, getAllUser, getDetailUser,
+    refreshToken
+
+};
