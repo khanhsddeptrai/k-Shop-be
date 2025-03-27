@@ -3,8 +3,9 @@ const router = express.Router();
 import userController from '../controllers/userController.js';
 import { authMiddleware, authUserMiddleware } from '../middleware/authMiddleware.js';
 
-router.post('/sign-up', userController.create);
+router.post('/sign-up', userController.signup);
 router.post('/sign-in', userController.login);
+router.post('/create', userController.create);
 router.put('/update-user/:id', userController.update);
 router.delete('/delete-user/:id', authMiddleware, userController.deleteUser);
 router.get('/get-all', userController.getAllUser);

@@ -34,6 +34,38 @@ const create = async (req, res) => {
     }
 }
 
+const signup = async (req, res) => {
+    try {
+        const { email, password, confirmPassword } = req.body;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const checkEmail = emailRegex.test(email);
+
+        if (!email || !password || !confirmPassword) {
+            return res.status(200).json({
+                status: "ERR",
+                message: "Vui lòng nhập đầy đủ thông tin"
+            })
+        } else if (!checkEmail) {
+            return res.status(200).json({
+                status: "ERR",
+                message: "Email không hợp lệ"
+            })
+        } else if (password !== confirmPassword) {
+            return res.status(200).json({
+                status: "ERR",
+                message: "Mật khẩu không khớp"
+            })
+        }
+        const data = await userService.signupUser(req.body);
+        return res.status(200).json(data)
+
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -53,7 +85,14 @@ const login = async (req, res) => {
         }
 
         const respone = await userService.loginUser(req.body);
-        return res.status(200).json(respone)
+        const { refresh_token, ...newRespone } = respone
+        res.cookie('refresh_token', refresh_token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'strict'
+        })
+
+        return res.status(200).json(newRespone)
 
     } catch (error) {
         return res.status(404).json({
@@ -145,8 +184,9 @@ const getDetailUser = async (req, res) => {
 }
 
 const refreshToken = async (req, res) => {
+    console.log("aaa")
     try {
-        const token = req.headers.token.split(' ')[1]
+        const token = req.cookies.refresh_token;
         if (!token) {
             return res.status(200).json({
                 status: "Lỗi!",
@@ -164,6 +204,6 @@ const refreshToken = async (req, res) => {
 
 export default {
     create, login, update, deleteUser, getAllUser, getDetailUser,
-    refreshToken
+    refreshToken, signup
 
 };

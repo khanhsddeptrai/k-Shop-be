@@ -18,7 +18,7 @@ const authMiddleware = (req, res, next) => {
         }
         const { payload } = user
         console.log(payload)
-        if (payload.role === "admin") {
+        if (user.role === "admin") {
             next()
         } else {
             return res.status(404).json({
@@ -46,9 +46,9 @@ const authUserMiddleware = (req, res, next) => {
                 status: "error"
             })
         }
-        const { payload } = user
-        console.log(payload)
-        if (payload?.role === "admin" || payload?.id === userId) {
+        // const { payload } = user
+        console.log("payload ", user)
+        if (user?.role === "admin" || user?.id === userId) {
             next()
         } else {
             return res.status(404).json({

@@ -46,6 +46,46 @@ const createUser = async (inputUser) => {
     }
 }
 
+const signupUser = async (inputUser) => {
+    const { email, password, confirmPassword } = inputUser;
+    try {
+        const checkUserExist = await User.findOne({ email });
+        if (checkUserExist !== null) {
+            return {
+                status: "ERR",
+                message: "Email đã tồn tại"
+            }
+        }
+
+        const hash = bcrypt.hashSync(password, 10);
+
+        const userRole = await Role.findOne({ _id: '67c5ba217cc2829c988cb868' });
+        if (!userRole) {
+            return {
+                status: "ERR",
+                message: "Role không tồn tại trong hệ thống"
+            };
+        }
+
+        const newUser = await User.create({
+            email,
+            password: hash,
+            role: "67c5ba217cc2829c988cb868"
+        });
+
+        if (newUser) {
+            return {
+                status: "success",
+                message: "Đăng kí tài khoản thành công",
+                data: newUser
+            }
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const loginUser = async (inputUser) => {
     const { email, password } = inputUser;
     try {
@@ -60,7 +100,7 @@ const loginUser = async (inputUser) => {
 
         if (!comparePassword) {
             return {
-                status: "failed",
+                status: "ERR",
                 message: "Email hoặc mật khẩu không đúng"
             }
 
@@ -180,5 +220,5 @@ const getDetail = async (id) => {
 
 export default {
     createUser, loginUser, updateUser, deleteAUser, getAll, getDetail,
-
+    signupUser
 };

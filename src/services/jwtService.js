@@ -2,17 +2,17 @@ import jwt from 'jsonwebtoken';
 
 export const genneralAccessToken = (payload) => {
     // console.log("payload", payload);
-    const accessToken = jwt.sign({ payload }, process.env.ACCESS_TOKEN, { expiresIn: '3600s' });
+    const accessToken = jwt.sign({ ...payload }, process.env.ACCESS_TOKEN, { expiresIn: '3600s' });
     return accessToken;
 }
 
 export const genneralRefreshToken = (payload) => {
     // console.log("payload", payload);
-    const refresh_token = jwt.sign({ payload }, process.env.REFRESH_TOKEN, { expiresIn: '365d' });
+    const refresh_token = jwt.sign({ ...payload }, process.env.REFRESH_TOKEN, { expiresIn: '365d' });
     return refresh_token;
 }
 
-export const refreshTokenJwtService = async (token) => {
+export const refreshTokenJwtService = (token) => {
     return new Promise(async (resolve, reject) => {
         try {
             jwt.verify(token, process.env.REFRESH_TOKEN, async (err, user) => {
@@ -22,10 +22,9 @@ export const refreshTokenJwtService = async (token) => {
                         message: 'The authentication'
                     })
                 console.log(user)
-                const { payload } = user;
                 const access_token = await genneralAccessToken({
-                    id: payload.id,
-                    role: payload.role.name
+                    id: user.id,
+                    role: user.role.name
                 });
                 resolve({
                     status: "ok",
