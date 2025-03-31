@@ -34,7 +34,7 @@ const getAll = async () => {
         const categories = await Category.find()
         if (categories) {
             return {
-                status: "Thành công",
+                status: "success",
                 message: "Lấy danh sách loại sản phẩm thành công",
                 data: categories
             };

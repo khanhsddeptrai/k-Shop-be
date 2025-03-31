@@ -184,7 +184,7 @@ const getDetailUser = async (req, res) => {
 }
 
 const refreshToken = async (req, res) => {
-    console.log("aaa")
+    // console.log("aaa")
     try {
         const token = req.cookies.refresh_token;
         if (!token) {
@@ -202,8 +202,22 @@ const refreshToken = async (req, res) => {
     }
 }
 
+const logout = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token');
+        return res.status(200).json({
+            status: "success",
+            message: "Đăng xuất thành công"
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
 export default {
     create, login, update, deleteUser, getAllUser, getDetailUser,
-    refreshToken, signup
+    refreshToken, signup, logout
 
 };

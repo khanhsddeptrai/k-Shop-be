@@ -26,7 +26,7 @@ const create = async (newProduct) => {
 
         if (product) {
             return {
-                status: "Thành công",
+                status: "success",
                 message: "Thêm mới sản phẩm thành công",
                 data: product
             };
@@ -111,7 +111,7 @@ const update = async (id, data) => {
         })
         if (checkProduct === null) {
             return {
-                status: "Lỗi",
+                status: "ERR",
                 message: "Không tìm thấy  sản phẩm này",
             }
         }
@@ -119,7 +119,7 @@ const update = async (id, data) => {
             const checkCategory = await Category.findById(data.category);
             if (checkCategory === null) {
                 return {
-                    status: "Lỗi",
+                    status: "ERR",
                     message: "Không tìm thấy loại sản phẩm này",
                 }
             }
@@ -128,7 +128,7 @@ const update = async (id, data) => {
         console.log("updateed category: ", updatedProduct)
 
         return {
-            status: "Thành công",
+            status: "success",
             message: "Cập nhật sản phẩm thành công",
             data: updatedProduct
         }
@@ -170,7 +170,7 @@ const deleteAProduct = async (id) => {
 
         if (product) {
             return {
-                status: "Thành công",
+                status: "success",
                 message: "Xóa sản phẩm thành công",
                 data: product
             };

@@ -11,18 +11,17 @@ const authMiddleware = (req, res, next) => {
     token = req.headers.token.split(" ")[1];
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
         if (err) {
-            return res.status(404).json({
+            return res.status(401).json({
                 message: "The authentication",
                 status: "error"
             })
         }
-        const { payload } = user
-        console.log(payload)
+        console.log("user 2222: ", user)
         if (user.role === "admin") {
             next()
         } else {
-            return res.status(404).json({
-                message: "The authentication",
+            return res.status(403).json({
+                message: "The authentication hihi",
                 status: "error"
             })
         }

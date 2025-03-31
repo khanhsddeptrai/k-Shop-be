@@ -134,16 +134,16 @@ const updateUser = async (id, dataUser) => {
         })
         if (checkUser === null) {
             return {
-                status: "Lỗi",
+                status: "ERR",
                 message: "Không tìm thấy người dùng",
             }
         }
 
         const updatedUser = await User.findByIdAndUpdate(id, dataUser, { new: true })
-        console.log("updateed user: ", updatedUser)
+        // console.log("updateed user: ", updatedUser)
 
         return {
-            status: "Thành công",
+            status: "success",
             message: "Cập nhật thông tin người dùng thành công",
             data: updatedUser
         }
@@ -198,7 +198,7 @@ const getDetail = async (id) => {
     try {
         const user = await User.findOne({
             _id: id
-        })
+        }).populate('role');
         if (user === null) {
             return {
                 status: "Lỗi",
