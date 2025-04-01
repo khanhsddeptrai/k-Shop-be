@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { genneralAccessToken, genneralRefreshToken } from './jwtService.js';
 
 const createUser = async (inputUser) => {
-    const { name, email, password, confirmPassword, phone } = inputUser;
+    const { name, email, password, confirmPassword, phone, avatar } = inputUser;
     try {
         const checkUserExist = await User.findOne({ email });
         if (checkUserExist !== null) {
@@ -30,12 +30,13 @@ const createUser = async (inputUser) => {
             email,
             password: hash,
             phone,
-            role: userRole._id
+            role: userRole._id,
+            avatar
         });
 
         if (newUser) {
             return {
-                status: "OK",
+                status: "success",
                 message: "Tạo tài khoản thành công",
                 data: newUser
             }
@@ -160,13 +161,13 @@ const deleteAUser = async (id, dataUser) => {
         })
         if (checkUser === null) {
             return {
-                status: "Lỗi",
+                status: "ERR",
                 message: "Không tìm thấy người dùng",
             }
         }
         await User.findByIdAndDelete(id)
         return {
-            status: "Thành công",
+            status: "success",
             message: "Xóa người dùng thành công",
         }
 

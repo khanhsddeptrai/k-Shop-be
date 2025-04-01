@@ -3,33 +3,33 @@ import { refreshTokenJwtService } from "../services/jwtService.js";
 
 const create = async (req, res) => {
     try {
-        const { name, email, password, confirmPassword, phone } = req.body;
+        const { name, email, password, confirmPassword, phone, avatar } = req.body;
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const checkEmail = emailRegex.test(email);
 
         if (!name || !email || !password || !confirmPassword || !phone) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Vui lòng nhập đầy đủ thông tin"
             })
         } else if (!checkEmail) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Email không hợp lệ"
             })
         } else if (password !== confirmPassword) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Mật khẩu không khớp"
             })
         }
 
         const data = await userService.createUser(req.body);
-        return res.status(200).json(data)
+        return res.status(201).json(data)
 
     } catch (error) {
-        return res.status(404).json({
-            message: error
+        return res.status(500).json({
+            message: error.message
         })
     }
 }
@@ -41,26 +41,26 @@ const signup = async (req, res) => {
         const checkEmail = emailRegex.test(email);
 
         if (!email || !password || !confirmPassword) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Vui lòng nhập đầy đủ thông tin"
             })
         } else if (!checkEmail) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Email không hợp lệ"
             })
         } else if (password !== confirmPassword) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Mật khẩu không khớp"
             })
         }
         const data = await userService.signupUser(req.body);
-        return res.status(200).json(data)
+        return res.status(201).json(data)
 
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
@@ -78,7 +78,7 @@ const login = async (req, res) => {
                 message: "Vui lòng nhập đầy đủ thông tin"
             })
         } else if (!checkEmail) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Email không hợp lệ"
             })
@@ -95,7 +95,7 @@ const login = async (req, res) => {
         return res.status(200).json(newRespone)
 
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
@@ -106,7 +106,7 @@ const update = async (req, res) => {
         const userId = req.params.id;
         const data = req.body;
         if (!userId) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "Lỗi!",
                 message: "Không tìm thấy thông tin người dùng"
             })
@@ -118,7 +118,7 @@ const update = async (req, res) => {
             data: respone.data
         })
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
@@ -128,7 +128,7 @@ const deleteUser = async (req, res) => {
     try {
         const userId = req.params.id;
         if (!userId) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "Lỗi!",
                 message: "Không tìm thấy thông tin người dùng"
             })
@@ -139,7 +139,7 @@ const deleteUser = async (req, res) => {
             message: respone.message,
         })
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
@@ -155,7 +155,7 @@ const getAllUser = async (req, res) => {
         })
 
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
@@ -165,7 +165,7 @@ const getDetailUser = async (req, res) => {
     try {
         const userId = req.params.id;
         if (!userId) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "Lỗi!",
                 message: "Không tìm thấy thông tin người dùng"
             })
@@ -177,7 +177,7 @@ const getDetailUser = async (req, res) => {
             data: respone.data
         })
     } catch (error) {
-        return res.status(404).json({
+        return res.status(500).json({
             message: error
         })
     }
