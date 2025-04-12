@@ -20,12 +20,12 @@ const createProduct = async (req, res) => {
 }
 
 const getAllProduct = async (req, res) => {
-    const { page, limit, sort, filter } = req.query;
+    const { page, limit, sort, filter, categoryId } = req.query;
     const pageNum = !isNaN(+page) && +page > 0 ? +page : 1;
     const limitNum = !isNaN(+limit) && +limit > 0 ? +limit : 4;
 
     try {
-        const response = await productService.getAll(limitNum, pageNum, sort, filter);
+        const response = await productService.getAll(limitNum, pageNum, sort, filter, categoryId);
         return res.status(200).json(response);
     } catch (error) {
         return res.status(500).json({
@@ -102,7 +102,35 @@ const deleteProduct = async (req, res) => {
     }
 }
 
+const deleteManyProduct = async (req, res) => {
+    try {
+        const productIds = req.body
+        if (!productIds) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Danh sách id là bắt buộc"
+            });
+        }
+        // if (!mongoose.Types.ObjectId.isValid(productId)) {
+        //     return res.status(400).json({
+        //         status: "Lỗi",
+        //         message: "productId không đúng định dạng ObjectId"
+        //     });
+        // }
+        const respone = await productService.deleteMany(productIds)
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+            data: respone.data
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: error
+        })
+    }
+}
+
 export default {
     createProduct, getAllProduct, updateProduct, getDetailsProduct,
-    deleteProduct
+    deleteProduct, deleteManyProduct
 };

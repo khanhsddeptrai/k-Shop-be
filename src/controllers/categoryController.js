@@ -4,7 +4,7 @@ const createCategory = async (req, res) => {
     try {
         const { name, image, description } = req.body;
         if (!name) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "ERR",
                 message: "Vui lòng nhập đầy đủ thông tin"
             })
@@ -34,7 +34,7 @@ const updateCategory = async (req, res) => {
         const categoryId = req.params.id;
         const data = req.body;
         if (!categoryId) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "Lỗi!",
                 message: "Không tìm loại sản phẩm này"
             })
@@ -56,7 +56,7 @@ const deleteCategory = async (req, res) => {
     try {
         const categoryId = req.params.id;
         if (!categoryId) {
-            return res.status(200).json({
+            return res.status(400).json({
                 status: "Lỗi!",
                 message: "Không tìm thấy thông tin người dùng"
             })

@@ -13,8 +13,8 @@ const StockImportSchema = new mongoose.Schema(
         },
         importDay: {
             type: Date,
-            required: true,
-            delete: Date.now()
+            // required: true,
+            default: Date.now()
         },
         description: {
             type: String

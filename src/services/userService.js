@@ -176,6 +176,20 @@ const deleteAUser = async (id, dataUser) => {
     }
 }
 
+const deleteMany = async (ids) => {
+    try {
+        const deletedUser = await User.deleteMany({ _id: { $in: ids } })
+        return {
+            status: "success",
+            message: "Xóa người dùng thành công",
+            data: deletedUser
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const getAll = async () => {
     try {
         const listUser = await User.find();
@@ -221,5 +235,5 @@ const getDetail = async (id) => {
 
 export default {
     createUser, loginUser, updateUser, deleteAUser, getAll, getDetail,
-    signupUser
+    signupUser, deleteMany
 };

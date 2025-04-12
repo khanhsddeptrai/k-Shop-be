@@ -216,8 +216,29 @@ const logout = async (req, res) => {
     }
 }
 
+const deleteManyUser = async (req, res) => {
+    try {
+        const userIds = req.body;
+        if (!userIds) {
+            return res.status(400).json({
+                status: "Lỗi!",
+                message: "Không tìm thấy thông tin người dùng"
+            })
+        }
+        const respone = await userService.deleteMany(userIds)
+        return res.status(200).json({
+            status: respone.status,
+            message: respone.message,
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error
+        })
+    }
+}
+
 export default {
     create, login, update, deleteUser, getAllUser, getDetailUser,
-    refreshToken, signup, logout
+    refreshToken, signup, logout, deleteManyUser
 
 };

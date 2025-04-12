@@ -28,7 +28,8 @@ const ProductSchema = new mongoose.Schema(
             ref: 'Discount'
         },
         countInStock: {
-            type: Number
+            type: Number,
+            default: 0
         },
         description: {
             type: String
