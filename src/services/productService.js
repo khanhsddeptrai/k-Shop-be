@@ -50,9 +50,9 @@ const getAll = async (limit, page, sort, filter, categoryId) => {
         if (categoryId) {
             const checkCategory = await Category.findById(categoryId);
             if (!checkCategory) {
-                throw new Error("Danh mục không tồn tại: " + categoryId);
+                throw new Error('Danh mục không tồn tại: ' + categoryId);
             }
-            query.where("category").equals(categoryId);
+            query.where('category').equals(categoryId);
         }
 
         // Xử lý sort
@@ -60,32 +60,54 @@ const getAll = async (limit, page, sort, filter, categoryId) => {
             query.sort({ [sort[1]]: sort[0] });
         }
 
-        // Xử lý filter (nếu cần)
-        if (filter && filter[0] && filter[1]) {
-            switch (filter[0]) {
-                case "category":
-                    const category = await Category.findOne({ name: filter[1] });
+        // Xử lý filter (nếu có)
+        if (filter) {
+            let filterField, filterValue;
+
+            // Nếu filter là chuỗi (ví dụ: "name:áo thun")
+            if (typeof filter === 'string') {
+                const [field, value] = filter.split(':');
+                if (!field || !value) {
+                    throw new Error('Định dạng filter không hợp lệ: ' + filter);
+                }
+                filterField = field;
+                filterValue = value;
+            }
+            // Nếu filter là mảng (ví dụ: ["name", "áo thun"])
+            else if (Array.isArray(filter) && filter[0] && filter[1]) {
+                filterField = filter[0];
+                filterValue = filter[1];
+            } else {
+                throw new Error('Định dạng filter không hợp lệ: ' + filter);
+            }
+
+            switch (filterField) {
+                case 'category':
+                    const category = await Category.findOne({ name: filterValue });
                     if (category) {
-                        query.where("category").equals(category._id);
+                        query.where('category').equals(category._id);
                     } else {
-                        throw new Error("Không tìm thấy danh mục: " + filter[1]);
+                        throw new Error('Không tìm thấy danh mục: ' + filterValue);
                     }
                     break;
-                case "name":
-                    query.where("name").regex(new RegExp(filter[1], "i"));
+                case 'name':
+                    query.where('name').regex(new RegExp(filterValue, 'i'));
                     break;
-                case "price":
-                    if (!isNaN(filter[1])) {
-                        query.where("price").equals(Number(filter[1]));
-                    } else if (filter[1].includes("-")) {
-                        const [min, max] = filter[1].split("-").map(Number);
-                        query.where("price").gte(min).lte(max);
+                case 'price':
+                    if (!isNaN(filterValue)) {
+                        query.where('price').equals(Number(filterValue));
+                    } else if (filterValue.includes('-')) {
+                        const [min, max] = filterValue.split('-').map(Number);
+                        if (isNaN(min) || isNaN(max)) {
+                            throw new Error('Giá trị price không hợp lệ: ' + filterValue);
+                        }
+                        query.where('price').gte(min).lte(max);
                     } else {
-                        throw new Error("Giá trị price không hợp lệ: " + filter[1]);
+                        throw new Error('Giá trị price không hợp lệ: ' + filterValue);
                     }
                     break;
                 default:
-                    throw new Error("Trường lọc không được hỗ trợ: " + filter[0]);
+                    throw new Error('Trường lọc không được hỗ trợ: ' + filterField);
             }
         }
 
@@ -93,11 +115,11 @@ const getAll = async (limit, page, sort, filter, categoryId) => {
         const totalProduct = await Product.countDocuments(query.getFilter());
 
         // Thực thi query
-        const products = await query.populate("category").exec();
+        const products = await query.populate('category').exec();
 
         const response = {
-            status: "Thành công",
-            message: products.length > 0 ? "Lấy danh sách sản phẩm thành công" : "Không có sản phẩm nào",
+            status: 'Thành công',
+            message: products.length > 0 ? 'Lấy danh sách sản phẩm thành công' : 'Không có sản phẩm nào',
             data: products,
             totalProduct,
             currentPage: Number(page) || 1,
@@ -106,7 +128,7 @@ const getAll = async (limit, page, sort, filter, categoryId) => {
 
         return response;
     } catch (error) {
-        throw new Error("Lỗi khi lấy danh sách sản phẩm: " + error.message);
+        throw new Error('Lỗi khi lấy danh sách sản phẩm: ' + error.message);
     }
 };
 
@@ -131,7 +153,6 @@ const update = async (id, data) => {
             }
         }
         const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true }).populate('category')
-        console.log("updateed category: ", updatedProduct)
 
         return {
             status: "success",
@@ -202,8 +223,28 @@ const deleteMany = async (ids) => {
     }
 }
 
+const getProductSuggest = async ({ search = '', limit = 5 }) => {
+    try {
+        const query = search
+            ? { name: { $regex: search, $options: 'i' } } // Tìm kiếm không phân biệt hoa thường
+            : {};
+        const products = await Product.find(query)
+            .select('_id name image price') // Chỉ lấy các trường cần thiết
+            .limit(parseInt(limit)) // Giới hạn số lượng kết quả
+            .lean(); // Chuyển đổi sang plain JavaScript object để tối ưu hiệu suất
+        return {
+            status: 'success',
+            data: products,
+            total: products.length,
+        };
+    } catch (error) {
+        console.error('Error in searchProductSuggestions:', error);
+        throw new Error('Failed to fetch product suggestions');
+    }
+}
+
 export default {
     create, getAll, update, getDetails, deleteAProduct,
-    deleteMany
+    deleteMany, getProductSuggest
 
 };

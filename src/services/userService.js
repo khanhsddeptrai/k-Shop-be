@@ -199,10 +199,12 @@ const getAll = async () => {
                 message: "Không có người dùng"
             };
         }
+        const totalUser = await User.countDocuments()
         return {
             status: "Thành công!",
             message: "Lấy danh sách người dùng thành công",
-            data: listUser
+            data: listUser,
+            totalUser: totalUser
         }
     } catch (error) {
         console.log(error);

@@ -58,5 +58,26 @@ const authUserMiddleware = (req, res, next) => {
     })
 }
 
+const isLoggedIn = (req, res, next) => {
+    let token = req.headers.token;
+    if (!token || !token.startsWith("Bearer ")) {
+        return res.status(401).json({
+            message: "No token provided or invalid format",
+            status: "ERR"
+        });
+    }
+    token = req.headers.token.split(" ")[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
+        if (err) {
+            return res.status(401).json({
+                message: "Invalid or expired token",
+                status: "ERR"
+            });
+        }
+        req.user = user;
+        next();
+    });
+}
 
-export { authMiddleware, authUserMiddleware }
+
+export { authMiddleware, authUserMiddleware, isLoggedIn }

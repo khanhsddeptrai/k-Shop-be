@@ -10,6 +10,6 @@ router.get('/detail/:id', productController.getDetailsProduct);
 router.put('/update/:id', authMiddleware, productController.updateProduct);
 router.delete('/delete/:id', productController.deleteProduct);
 router.delete('/delete-many', authMiddleware, productController.deleteManyProduct);
-
+router.get('/search-suggestion', productController.getProductSuggestion);
 
 export default router;

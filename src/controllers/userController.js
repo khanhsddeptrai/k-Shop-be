@@ -148,11 +148,7 @@ const deleteUser = async (req, res) => {
 const getAllUser = async (req, res) => {
     try {
         const respone = await userService.getAll()
-        return res.status(200).json({
-            status: respone.status,
-            message: respone.message,
-            data: respone.data
-        })
+        return res.status(200).json(respone)
 
     } catch (error) {
         return res.status(500).json({

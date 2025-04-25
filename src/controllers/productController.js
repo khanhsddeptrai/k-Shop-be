@@ -130,7 +130,20 @@ const deleteManyProduct = async (req, res) => {
     }
 }
 
+const getProductSuggestion = async (req, res) => {
+    try {
+        const { search, limit } = req.query; // Lấy tham số từ query string
+        const result = await productService.getProductSuggest({ search, limit });
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: error.message || 'Internal server error',
+        });
+    }
+}
+
 export default {
     createProduct, getAllProduct, updateProduct, getDetailsProduct,
-    deleteProduct, deleteManyProduct
+    deleteProduct, deleteManyProduct, getProductSuggestion
 };
