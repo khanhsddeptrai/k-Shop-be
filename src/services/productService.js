@@ -1,12 +1,23 @@
 import Product from "../models/ProductModel.js";
 import Category from "../models/CategoryModel.js";
+import natural from "natural";
+
+export const computeTfIdfVector = async (text, allProducts) => {
+    const tfidf = new natural.TfIdf();
+    tfidf.addDocument(text); // Thêm văn bản hiện tại
+    allProducts.forEach(product => tfidf.addDocument(`${product.name} ${product.description || ''}`.toLowerCase()));
+
+    const vector = [];
+    tfidf.tfidfs(text, (i, measure) => {
+        if (i === 0) vector.push(measure);
+    });
+    return vector;
+};
 
 const create = async (newProduct) => {
     const { name, image, category, price, disscount, countInStock, description } = newProduct;
     try {
-        const checkProduct = await Product.findOne({
-            name: name
-        })
+        const checkProduct = await Product.findOne({ name });
         if (checkProduct !== null) {
             return {
                 status: "Lỗi",
@@ -20,22 +31,71 @@ const create = async (newProduct) => {
                 message: "Danh mục không tồn tại trong hệ thống"
             };
         }
+
+        // Tính TF-IDF vector
+        const allProducts = await Product.find().lean();
+        const text = `${name} ${description || ''}`.toLowerCase();
+        const tfidfVector = await computeTfIdfVector(text, allProducts);
+
         const product = await Product.create({
-            name, image, category, price, disscount, countInStock, description
+            name, image, category, price, disscount, countInStock, description, tfidfVector
         });
 
-        if (product) {
+        return {
+            status: "success",
+            message: "Thêm mới sản phẩm thành công",
+            data: product
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            status: "ERR",
+            message: "Lỗi khi tạo sản phẩm: " + error.message
+        };
+    }
+};
+
+const update = async (id, data) => {
+    try {
+        const checkProduct = await Product.findById(id);
+        if (!checkProduct) {
             return {
-                status: "success",
-                message: "Thêm mới sản phẩm thành công",
-                data: product
+                status: "ERR",
+                message: "Không tìm thấy sản phẩm này",
             };
         }
+        if (data.category) {
+            const checkCategory = await Category.findById(data.category);
+            if (!checkCategory) {
+                return {
+                    status: "ERR",
+                    message: "Không tìm thấy loại sản phẩm này",
+                };
+            }
+        }
 
+        // Tính lại TF-IDF vector nếu name hoặc description thay đổi
+        if (data.name || data.description) {
+            const allProducts = await Product.find({ _id: { $ne: id } }).lean();
+            const text = `${data.name || checkProduct.name} ${data.description || checkProduct.description || ''}`.toLowerCase();
+            data.tfidfVector = await computeTfIdfVector(text, allProducts);
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true }).populate('category');
+
+        return {
+            status: "success",
+            message: "Cập nhật sản phẩm thành công",
+            data: updatedProduct
+        };
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        return {
+            status: "ERR",
+            message: "Lỗi khi cập nhật sản phẩm: " + error.message
+        };
     }
-}
+};
 
 const getAll = async (limit, page, sort, filter, categoryId) => {
     try {
@@ -132,39 +192,6 @@ const getAll = async (limit, page, sort, filter, categoryId) => {
     }
 };
 
-const update = async (id, data) => {
-    try {
-        const checkProduct = await Product.findOne({
-            _id: id
-        })
-        if (checkProduct === null) {
-            return {
-                status: "ERR",
-                message: "Không tìm thấy  sản phẩm này",
-            }
-        }
-        if (data.category) {
-            const checkCategory = await Category.findById(data.category);
-            if (checkCategory === null) {
-                return {
-                    status: "ERR",
-                    message: "Không tìm thấy loại sản phẩm này",
-                }
-            }
-        }
-        const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true }).populate('category')
-
-        return {
-            status: "success",
-            message: "Cập nhật sản phẩm thành công",
-            data: updatedProduct
-        }
-
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 const getDetails = async (id) => {
     try {
         const product = await Product.findOne({ _id: id }).populate('category')
@@ -243,8 +270,96 @@ const getProductSuggest = async ({ search = '', limit = 5 }) => {
     }
 }
 
-export default {
-    create, getAll, update, getDetails, deleteAProduct,
-    deleteMany, getProductSuggest
+const getProductsByCategoryId = async ({ categoryId, limit, excludeId }) => {
+    try {
+        const checkCategory = await Category.findById(categoryId);
+        if (!checkCategory) {
+            return {
+                status: "ERR",
+                message: "Danh mục không tồn tại trong hệ thống",
+            };
+        }
+        const query = { category: categoryId };
+        if (excludeId) {
+            query._id = { $ne: excludeId }; // Loại bỏ sản phẩm có ID trùng
+        }
 
+        const products = await Product.find(query)
+            .limit(parseInt(limit))
+            .lean(); // Chuyển sang plain JavaScript object để tối ưu
+
+        return {
+            status: "success",
+            message: products.length > 0 ? "Lấy danh sách sản phẩm gợi ý thành công" : "Không có sản phẩm gợi ý",
+            data: products,
+        };
+    } catch (error) {
+        console.error("Error in getProductsByCategory:", error);
+        return {
+            status: "ERR",
+            message: "Lỗi khi lấy danh sách sản phẩm gợi ý: " + error.message,
+        };
+    }
+};
+
+// Hàm cập nhật: Tìm sản phẩm tương đồng sử dụng TF-IDF và cosine similarity với vector đã lưu
+const getSimilarProducts = async ({ productId, limit = 4 }) => {
+    try {
+        // Lấy sản phẩm hiện tại
+        const currentProduct = await Product.findById(productId).lean();
+        if (!currentProduct) {
+            return {
+                status: "ERR",
+                message: "Sản phẩm không tồn tại",
+            };
+        }
+
+        // Lấy tất cả sản phẩm khác có tfidfVector
+        const allProducts = await Product.find({ _id: { $ne: productId }, tfidfVector: { $exists: true } }).lean();
+        if (!allProducts.length) {
+            return {
+                status: "success",
+                message: "Không có sản phẩm tương đồng",
+                data: [],
+            };
+        }
+
+        // Tính cosine similarity giữa vector của sản phẩm hiện tại và các sản phẩm khác
+        const similarities = allProducts.map(product => {
+            const vector1 = currentProduct.tfidfVector || [];
+            const vector2 = product.tfidfVector || [];
+
+            const dotProduct = vector1.reduce((sum, v, i) => sum + v * (vector2[i] || 0), 0);
+            const magnitude1 = Math.sqrt(vector1.reduce((sum, v) => sum + v * v, 0));
+            const magnitude2 = Math.sqrt(vector2.reduce((sum, v) => sum + v * v, 0));
+            const similarity = magnitude1 && magnitude2 ? dotProduct / (magnitude1 * magnitude2) : 0;
+
+            return { id: product._id, similarity };
+        });
+
+        // Sắp xếp theo độ tương đồng và lấy top limit sản phẩm
+        const similarProductIds = similarities
+            .sort((a, b) => b.similarity - a.similarity)
+            .slice(0, parseInt(limit))
+            .map(item => item.id);
+
+        const similarProducts = await Product.find({ _id: { $in: similarProductIds } }).lean();
+
+        return {
+            status: "success",
+            message: similarProducts.length > 0 ? "Lấy danh sách sản phẩm tương đồng thành công" : "Không có sản phẩm tương đồng",
+            data: similarProducts,
+        };
+    } catch (error) {
+        console.error("Error in getSimilarProducts:", error);
+        return {
+            status: "ERR",
+            message: "Lỗi khi lấy danh sách sản phẩm tương đồng: " + error.message,
+        };
+    }
+};
+
+export default {
+    create, update, getAll, getDetails, deleteAProduct,
+    deleteMany, getProductSuggest, getProductsByCategoryId, getSimilarProducts
 };

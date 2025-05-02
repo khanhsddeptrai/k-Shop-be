@@ -36,6 +36,10 @@ const ProductSchema = new mongoose.Schema(
         },
         slug: {
             type: String
+        },
+        tfidfVector: {
+            type: [Number],
+            default: []
         }
     },
     {

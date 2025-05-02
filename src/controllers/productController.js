@@ -111,12 +111,6 @@ const deleteManyProduct = async (req, res) => {
                 message: "Danh sách id là bắt buộc"
             });
         }
-        // if (!mongoose.Types.ObjectId.isValid(productId)) {
-        //     return res.status(400).json({
-        //         status: "Lỗi",
-        //         message: "productId không đúng định dạng ObjectId"
-        //     });
-        // }
         const respone = await productService.deleteMany(productIds)
         return res.status(200).json({
             status: respone.status,
@@ -143,7 +137,61 @@ const getProductSuggestion = async (req, res) => {
     }
 }
 
+const getProductsByCategory = async (req, res) => {
+    try {
+        const { categoryId, limit, excludeId } = req.query;
+        if (!categoryId) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "categoryId là bắt buộc",
+            });
+        }
+
+        if (excludeId && !mongoose.Types.ObjectId.isValid(excludeId)) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "excludeId không đúng định dạng ObjectId",
+            });
+        }
+        const response = await productService.getProductsByCategoryId({
+            categoryId,
+            limit,
+            excludeId,
+        });
+
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({
+            status: "ERR",
+            message: error.message || "Lỗi server",
+        });
+    }
+};
+
+const getSimilarProducts = async (req, res) => {
+    try {
+        const { productId, limit } = req.query;
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "productId không đúng định dạng ObjectId",
+            });
+        }
+        const response = await productService.getSimilarProducts({
+            productId,
+            limit,
+        });
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({
+            status: "ERR",
+            message: error.message || "Lỗi server",
+        });
+    }
+};
+
 export default {
     createProduct, getAllProduct, updateProduct, getDetailsProduct,
-    deleteProduct, deleteManyProduct, getProductSuggestion
+    deleteProduct, deleteManyProduct, getProductSuggestion,
+    getProductsByCategory, getSimilarProducts
 };

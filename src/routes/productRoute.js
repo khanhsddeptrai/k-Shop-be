@@ -11,5 +11,7 @@ router.put('/update/:id', authMiddleware, productController.updateProduct);
 router.delete('/delete/:id', productController.deleteProduct);
 router.delete('/delete-many', authMiddleware, productController.deleteManyProduct);
 router.get('/search-suggestion', productController.getProductSuggestion);
+router.get("/same-category", productController.getProductsByCategory);
+router.get("/similar-products", productController.getSimilarProducts);
 
 export default router;
