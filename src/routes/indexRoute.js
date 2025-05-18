@@ -5,6 +5,7 @@ import roleRouter from './roleRoute.js'
 import stockImportRouter from './stockImportRoute.js'
 import orderRoute from './orderRoute.js'
 import voucherRoute from './voucherRoute.js'
+import paypalRoute from './paypalRoutes.js'
 
 const routes = (app) => {
     app.use('/api/user', userRouter);
@@ -14,6 +15,7 @@ const routes = (app) => {
     app.use('/api/stock-import', stockImportRouter);
     app.use('/api/order', orderRoute);
     app.use('/api/voucher', voucherRoute);
+    app.use('/api/paypal', paypalRoute);
 }
 
 export default routes;

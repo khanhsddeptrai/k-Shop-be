@@ -10,6 +10,7 @@ const createOrder = async (req, res) => {
             totalPrice,
             paymentMethod,
             voucherId,
+            paymentStatus,
         } = req.body;
 
         // Kiểm tra các trường bắt buộc
@@ -98,6 +99,33 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+const updatePaymentStatus = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { paymentStatus } = req.body;
+        const response = await orderService.updatePaymentStatus(id, paymentStatus);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({
+            status: "ERR",
+            message: error.message,
+        });
+    }
+};
+
+const deleteOrder = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const response = await orderService.deleteAOrder(id);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(500).json({
+            status: "ERR",
+            message: error.message || "Lỗi server khi xóa đơn hàng",
+        });
+    }
+};
 export default {
-    createOrder, getMyOrders, getOrderDetail, getAllOrders, updateOrderStatus
+    createOrder, getMyOrders, getOrderDetail, getAllOrders, updateOrderStatus,
+    updatePaymentStatus, deleteOrder
 };

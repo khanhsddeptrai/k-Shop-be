@@ -14,6 +14,7 @@ const create = async (orderData) => {
             isPaid = false,
             isDelivered = false,
             status = "pending",
+            paymentStatus
         } = orderData;
 
         if (!user || !orderItems || !shippingAddress || !totalPrice || !paymentMethod) {
@@ -76,7 +77,7 @@ const create = async (orderData) => {
             };
         }
 
-        if (!["COD", "BankTransfer", "MoMo"].includes(paymentMethod)) {
+        if (!["COD", "BankTransfer", "MoMo", "PayPal"].includes(paymentMethod)) {
             return {
                 status: "ERR",
                 message: "paymentMethod không hợp lệ",
@@ -251,6 +252,88 @@ const updateStatus = async (id, status) => {
         };
     }
 };
+
+const updatePaymentStatus = async (id, paymentStatus) => {
+    try {
+        const checkOrder = await Order.findOne({ _id: id });
+        if (!checkOrder) {
+            return {
+                status: "ERR",
+                message: "Không tìm thấy đơn hàng này",
+            };
+        }
+
+        if (!['PENDING', 'PAID', 'FAILED'].includes(paymentStatus)) {
+            return {
+                status: "ERR",
+                message: "paymentStatus không hợp lệ",
+            };
+        }
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id,
+            { paymentStatus },
+            { new: true }
+        );
+        return {
+            status: "success",
+            message: "Cập nhật trạng thái thanh toán thành công",
+            data: updatedOrder,
+        };
+    } catch (error) {
+        return {
+            status: "ERR",
+            message: error.message,
+        };
+    }
+};
+
+const deleteAOrder = async (id) => {
+    try {
+        // Kiểm tra ID hợp lệ
+        if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+            return {
+                status: "ERR",
+                message: "ID đơn hàng không hợp lệ",
+            };
+        }
+
+        // Tìm đơn hàng
+        const order = await Order.findOne({ _id: id });
+        if (!order) {
+            return {
+                status: "ERR",
+                message: "Không tìm thấy đơn hàng này",
+            };
+        }
+
+        // Khôi phục số lượng tồn kho cho các sản phẩm trong orderItems
+        for (const item of order.orderItems) {
+            const { product, quantity } = item;
+            await Product.findByIdAndUpdate(
+                product,
+                { $inc: { countInStock: quantity } }, // Tăng số lượng tồn kho
+                { new: true }
+            );
+        }
+
+        // Xóa đơn hàng
+        await Order.deleteOne({ _id: id });
+
+        return {
+            status: "success",
+            message: "Xóa đơn hàng thành công",
+        };
+    } catch (error) {
+        console.error("Lỗi khi xóa đơn hàng:", error);
+        return {
+            status: "ERR",
+            message: "Lỗi khi xóa đơn hàng: " + error.message,
+        };
+    }
+};
+
 export default {
-    create, getOrdersByUserId, getDetail, getAll, updateStatus
+    create, getOrdersByUserId, getDetail, getAll, updateStatus,
+    updatePaymentStatus, deleteAOrder
 };

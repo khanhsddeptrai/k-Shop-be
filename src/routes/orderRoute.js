@@ -9,7 +9,8 @@ router.get('/my-order/:userId', orderController.getMyOrders);
 router.get('/get-all', orderController.getAllOrders);
 router.get('/detail/:id', orderController.getOrderDetail);
 router.put('/change-status/:id', orderController.updateOrderStatus);
-
+router.put('/update-payment-status/:id', orderController.updatePaymentStatus);
+router.delete('/delete/:id', orderController.deleteOrder);
 
 
 export default router;

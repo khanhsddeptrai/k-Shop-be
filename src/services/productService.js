@@ -2,20 +2,53 @@ import Product from "../models/ProductModel.js";
 import Category from "../models/CategoryModel.js";
 import natural from "natural";
 
-export const computeTfIdfVector = async (text, allProducts) => {
-    const tfidf = new natural.TfIdf();
-    tfidf.addDocument(text); // Thêm văn bản hiện tại
-    allProducts.forEach(product => tfidf.addDocument(`${product.name} ${product.description || ''}`.toLowerCase()));
+const stopWords = [
+    'là', 'với', 'của', 'cho', 'trong', 'và', 'hoặc', 'tại', 'the', 'and', 'or', 'in', 'on', 'at', 'to'
+];
 
-    const vector = [];
-    tfidf.tfidfs(text, (i, measure) => {
-        if (i === 0) vector.push(measure);
-    });
-    return vector;
+export const computeTfIdfVector = async (text, allProducts) => {
+    try {
+        if (!text || text.trim().length < 3) {
+            console.warn('Text is too short or empty');
+            return [];
+        }
+
+        const tfidf = new natural.TfIdf();
+        tfidf.stopwords = stopWords; // Thêm từ dừng
+
+        // Thêm tài liệu
+        tfidf.addDocument(text.toLowerCase());
+        allProducts.forEach(product => {
+            const productText = `${product.name} ${product.description || ''}`.toLowerCase();
+            tfidf.addDocument(productText);
+        });
+
+        // Xây dựng từ điển từ các tài liệu
+        const vocabulary = [];
+        tfidf.listTerms(0).forEach(term => {
+            if (!vocabulary.includes(term.term)) {
+                vocabulary.push(term.term);
+            }
+        });
+
+        // Tạo vector TF-IDF
+        const vector = new Array(vocabulary.length).fill(0);
+        tfidf.listTerms(0).forEach(term => {
+            const index = vocabulary.indexOf(term.term);
+            if (index !== -1) {
+                vector[index] = term.tfidf;
+            }
+        });
+
+        return vector;
+    } catch (error) {
+        console.error('Error computing TF-IDF vector:', error);
+        return [];
+    }
 };
 
 const create = async (newProduct) => {
-    const { name, image, category, price, disscount, countInStock, description } = newProduct;
+    const { name, image, category, price, discount, countInStock, description } = newProduct;
     try {
         const checkProduct = await Product.findOne({ name });
         if (checkProduct !== null) {
@@ -33,12 +66,12 @@ const create = async (newProduct) => {
         }
 
         // Tính TF-IDF vector
-        const allProducts = await Product.find().lean();
+        const allProducts = await Product.find().limit(100).lean(); // Giới hạn số sản phẩm
         const text = `${name} ${description || ''}`.toLowerCase();
         const tfidfVector = await computeTfIdfVector(text, allProducts);
 
         const product = await Product.create({
-            name, image, category, price, disscount, countInStock, description, tfidfVector
+            name, image, category, price, discount, countInStock, description, tfidfVector
         });
 
         return {
@@ -76,7 +109,7 @@ const update = async (id, data) => {
 
         // Tính lại TF-IDF vector nếu name hoặc description thay đổi
         if (data.name || data.description) {
-            const allProducts = await Product.find({ _id: { $ne: id } }).lean();
+            const allProducts = await Product.find({ _id: { $ne: id } }).limit(100).lean();
             const text = `${data.name || checkProduct.name} ${data.description || checkProduct.description || ''}`.toLowerCase();
             data.tfidfVector = await computeTfIdfVector(text, allProducts);
         }
@@ -304,8 +337,10 @@ const getProductsByCategoryId = async ({ categoryId, limit, excludeId }) => {
 
 // Hàm cập nhật: Tìm sản phẩm tương đồng sử dụng TF-IDF và cosine similarity với vector đã lưu
 const getSimilarProducts = async ({ productId, limit = 4 }) => {
+    const threshold = 0.6; // Ngưỡng cố định
+    const MAX_PRODUCTS = 100; // Giới hạn số sản phẩm tải
+
     try {
-        // Lấy sản phẩm hiện tại
         const currentProduct = await Product.findById(productId).lean();
         if (!currentProduct) {
             return {
@@ -314,50 +349,102 @@ const getSimilarProducts = async ({ productId, limit = 4 }) => {
             };
         }
 
-        // Lấy tất cả sản phẩm khác có tfidfVector
-        const allProducts = await Product.find({ _id: { $ne: productId }, tfidfVector: { $exists: true } }).lean();
-        if (!allProducts.length) {
+        const currentName = currentProduct.name.toLowerCase();
+        const keywords = currentName.split(' ')
+            .filter(word => word.length > 2 && !stopWords.includes(word.toLowerCase()));
+
+        // Bước 1: Lọc sản phẩm có tên chứa từ khóa
+        const nameMatchedProducts = await Product.find({
+            _id: { $ne: productId },
+            name: { $regex: keywords.join('|'), $options: 'i' },
+        })
+            .limit(MAX_PRODUCTS)
+            .lean();
+
+        if (nameMatchedProducts.length === 0) {
+            // Fallback về sản phẩm cùng danh mục
+            console.log(`No products matched keywords, falling back to category ${currentProduct.category}`);
+            const fallbackProducts = await Product.find({
+                _id: { $ne: productId },
+                category: currentProduct.category
+            })
+                .sort({ price: 1 }) // Sắp xếp theo giá
+                .limit(parseInt(limit))
+                .lean();
+
             return {
                 status: "success",
-                message: "Không có sản phẩm tương đồng",
-                data: [],
+                message: `Không có sản phẩm nào có tên tương tự, fallback về danh mục ${currentProduct.category}`,
+                data: fallbackProducts,
             };
         }
 
-        // Tính cosine similarity giữa vector của sản phẩm hiện tại và các sản phẩm khác
-        const similarities = allProducts.map(product => {
-            const vector1 = currentProduct.tfidfVector || [];
-            const vector2 = product.tfidfVector || [];
+        // Bước 2: Tính TF-IDF vector của sản phẩm hiện tại
+        const text = `${currentProduct.name} ${currentProduct.description || ''}`.toLowerCase();
+        const vector1 = await computeTfIdfVector(text, nameMatchedProducts);
 
-            const dotProduct = vector1.reduce((sum, v, i) => sum + v * (vector2[i] || 0), 0);
-            const magnitude1 = Math.sqrt(vector1.reduce((sum, v) => sum + v * v, 0));
-            const magnitude2 = Math.sqrt(vector2.reduce((sum, v) => sum + v * v, 0));
+        // Bước 3: Tính độ tương đồng
+        const similarities = nameMatchedProducts.map(product => {
+            const vector2 = product.tfidfVector || [];
+            // Đảm bảo vector có cùng độ dài
+            const maxLength = Math.max(vector1.length, vector2.length);
+            const v1 = vector1.concat(new Array(maxLength - vector1.length).fill(0));
+            const v2 = vector2.concat(new Array(maxLength - vector2.length).fill(0));
+
+            const dotProduct = v1.reduce((sum, v, i) => sum + v * v2[i], 0);
+            const magnitude1 = Math.sqrt(v1.reduce((sum, v) => sum + v * v, 0));
+            const magnitude2 = Math.sqrt(v2.reduce((sum, v) => sum + v * v, 0));
             const similarity = magnitude1 && magnitude2 ? dotProduct / (magnitude1 * magnitude2) : 0;
 
+            console.log(`Sản phẩm: ${product.name}, Similarity: ${similarity.toFixed(4)}, Category: ${product.category}`);
             return { id: product._id, similarity };
         });
 
-        // Sắp xếp theo độ tương đồng và lấy top limit sản phẩm
-        const similarProductIds = similarities
+        // Bước 4: Lọc theo ngưỡng
+        const filtered = similarities
+            .filter(item => item.similarity >= threshold)
             .sort((a, b) => b.similarity - a.similarity)
-            .slice(0, parseInt(limit))
-            .map(item => item.id);
 
+
+        // console.log(`Tổng sản phẩm vượt ngưỡng ${threshold}: ${filtered.length}`);
+
+        // Bước 5: Kiểm tra xem có sản phẩm nào vượt ngưỡng không
+        if (filtered.length === 0) {
+            console.log(`Không có sản phẩm nào vượt ngưỡng ${threshold}, falling back to category ${currentProduct.category}`);
+            const fallbackProducts = await Product.find({
+                _id: { $ne: productId },
+                category: currentProduct.category
+            })
+                .sort({ price: 1 })
+                .limit(parseInt(limit))
+                .lean();
+
+            return {
+                status: "success",
+                message: `Không có sản phẩm nào vượt ngưỡng ${threshold}, fallback về danh mục ${currentProduct.category}`,
+                data: fallbackProducts,
+            };
+        }
+
+        // Lấy sản phẩm theo danh sách đã lọc
+        const similarProductIds = filtered.map(item => item.id);
         const similarProducts = await Product.find({ _id: { $in: similarProductIds } }).lean();
 
         return {
             status: "success",
-            message: similarProducts.length > 0 ? "Lấy danh sách sản phẩm tương đồng thành công" : "Không có sản phẩm tương đồng",
+            message: `Lấy danh sách sản phẩm tương tự với threshold >= ${threshold} thành công`,
             data: similarProducts,
         };
     } catch (error) {
         console.error("Error in getSimilarProducts:", error);
         return {
             status: "ERR",
-            message: "Lỗi khi lấy danh sách sản phẩm tương đồng: " + error.message,
+            message: "Lỗi khi lấy danh sách sản phẩm tương tự: " + error.message,
         };
     }
 };
+
+
 
 export default {
     create, update, getAll, getDetails, deleteAProduct,

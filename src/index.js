@@ -6,14 +6,12 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import routes from './routes/indexRoute.js';
-import Product from './models/ProductModel.js';
-import { computeTfIdfVector } from './services/productService.js';
 
 const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(cors({
-    origin: 'http://localhost:3000', // URL frontend
+    origin: 'http://localhost:3000',
     credentials: true
 }));
 app.use(express.json({ limit: "50mb" }));
@@ -35,17 +33,35 @@ mongoose.connect(`${process.env.MONGOOSE_DB}`)
     .catch((error) => {
         console.log(error);
     });
-// const updateExistingProducts = async () => {
-//     const products = await Product.find().lean();
-//     for (const product of products) {
-//         const text = `${product.name} ${product.description || ''}`.toLowerCase();
-//         const allOtherProducts = await Product.find({ _id: { $ne: product._id } }).lean();
-//         const tfidfVector = await computeTfIdfVector(text, allOtherProducts);
-//         await Product.updateOne({ _id: product._id }, { tfidfVector });
+
+// const reindexTfIdfVectors = async () => {
+//     try {
+//         const BATCH_SIZE = 100;
+//         let skip = 0;
+//         while (true) {
+//             const allProducts = await Product.find().lean().skip(skip).limit(BATCH_SIZE);
+//             if (!allProducts.length) break;
+
+//             for (const product of allProducts) {
+//                 const text = `${product.name} ${product.description || ''}`.toLowerCase();
+//                 if (text.trim().length < 3) {
+//                     console.warn(`Skipping product ${product.name}: text too short`);
+//                     continue;
+//                 }
+//                 const otherProducts = allProducts.filter(p => p._id.toString() !== product._id.toString());
+//                 const tfidfVector = await computeTfIdfVector(text, otherProducts);
+//                 await Product.updateOne({ _id: product._id }, { tfidfVector });
+//                 console.log(`Updated TF-IDF vector for product ${product.name}`);
+//             }
+//             skip += BATCH_SIZE;
+//         }
+//         console.log("Reindexed TF-IDF vectors for all products");
+//     } catch (error) {
+//         console.error("Error reindexing TF-IDF vectors:", error);
 //     }
-//     console.log("Updated TF-IDF vectors for existing products");
 // };
-// updateExistingProducts()
+// await reindexTfIdfVectors()
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
