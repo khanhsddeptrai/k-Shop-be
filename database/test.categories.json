@@ -1,0 +1,70 @@
+[{
+  "_id": {
+    "$oid": "67d81a841e3700e369c72925"
+  },
+  "name": "Tai nghe",
+  "description": "",
+  "image": "link tai nghe",
+  "createdAt": {
+    "$date": "2025-03-17T12:50:12.635Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-17T12:50:12.635Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67d8237d227dd170fdc7e7b2"
+  },
+  "name": "Bàn phím",
+  "createdAt": {
+    "$date": "2025-03-17T13:28:29.426Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-17T13:28:29.426Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67ea35bef2228c33865d7ea1"
+  },
+  "name": "Chuột",
+  "description": "Chuột máy tính",
+  "createdAt": {
+    "$date": "2025-03-31T06:27:10.432Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-31T06:27:10.432Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6821a84d35ba9e316c0f265a"
+  },
+  "name": "Giá đỡ laptop",
+  "description": "gia do",
+  "createdAt": {
+    "$date": "2025-05-12T07:50:37.330Z"
+  },
+  "updatedAt": {
+    "$date": "2025-05-12T07:50:37.330Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6821a87135ba9e316c0f265f"
+  },
+  "name": "Lót chuột",
+  "description": "",
+  "createdAt": {
+    "$date": "2025-05-12T07:51:13.983Z"
+  },
+  "updatedAt": {
+    "$date": "2025-05-12T07:51:13.983Z"
+  },
+  "__v": 0
+}]

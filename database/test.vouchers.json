@@ -1,0 +1,63 @@
+[{
+  "_id": {
+    "$oid": "6806310f6b7c0728ba2934aa"
+  },
+  "code": "VCH_0XA4AZEY",
+  "percent": 20,
+  "maxUsage": 100,
+  "usedCount": 1,
+  "minOrderValue": 150000,
+  "expiresAt": {
+    "$date": "2025-04-22T17:00:00.000Z"
+  },
+  "status": "active",
+  "createdAt": {
+    "$date": "2025-04-21T11:50:39.254Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T08:23:06.435Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680886a9c18d8cfbeed10ce2"
+  },
+  "code": "VCH_ZT9R2JYU",
+  "percent": 11,
+  "maxUsage": 15,
+  "usedCount": 0,
+  "minOrderValue": 50000,
+  "expiresAt": {
+    "$date": "2025-04-30T17:00:00.000Z"
+  },
+  "status": "active",
+  "createdAt": {
+    "$date": "2025-04-23T06:20:29.993Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T06:21:16.664Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6821bfe5d7f914359c86d6b0"
+  },
+  "code": "VCH_EJ0PG6US",
+  "percent": 15,
+  "maxUsage": 10,
+  "usedCount": 0,
+  "minOrderValue": 500000,
+  "expiresAt": {
+    "$date": "2025-07-30T17:00:00.000Z"
+  },
+  "status": "active",
+  "createdAt": {
+    "$date": "2025-05-12T09:31:17.851Z"
+  },
+  "updatedAt": {
+    "$date": "2025-05-12T09:31:17.851Z"
+  },
+  "__v": 0
+}]

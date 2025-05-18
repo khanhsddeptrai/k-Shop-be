@@ -1,0 +1,156 @@
+[{
+  "_id": {
+    "$oid": "67f69b968eb29715e19927b4"
+  },
+  "quantity": 10,
+  "productId": {
+    "$oid": "67d82ac17e9cafe3091160cb"
+  },
+  "importDay": null,
+  "description": "",
+  "createdAt": {
+    "$date": "2025-04-09T16:08:54.216Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-09T16:08:54.216Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f69fcb8eb29715e19927d8"
+  },
+  "quantity": -10,
+  "productId": {
+    "$oid": "67d82ac17e9cafe3091160cb"
+  },
+  "importDay": null,
+  "description": "",
+  "createdAt": {
+    "$date": "2025-04-09T16:26:51.180Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-09T16:26:51.180Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f6a05d0c34726807fd3e5e"
+  },
+  "quantity": 10,
+  "productId": {
+    "$oid": "67d82ac17e9cafe3091160cb"
+  },
+  "importDay": {
+    "$date": "2025-04-09T16:29:17.092Z"
+  },
+  "description": "",
+  "createdAt": {
+    "$date": "2025-04-09T16:29:17.096Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-09T16:29:17.096Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f74d8f6e8908c786ee8748"
+  },
+  "quantity": 10,
+  "productId": {
+    "$oid": "67d82ac17e9cafe3091160cb"
+  },
+  "importDay": {
+    "$date": "2025-04-10T04:48:15.152Z"
+  },
+  "description": "",
+  "createdAt": {
+    "$date": "2025-04-10T04:48:15.159Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-10T04:48:15.159Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f74e796e8908c786ee874f"
+  },
+  "quantity": 20,
+  "productId": {
+    "$oid": "67d82bb9fcd623f1501729a0"
+  },
+  "importDay": {
+    "$date": "2025-04-10T04:52:09.114Z"
+  },
+  "description": "",
+  "createdAt": {
+    "$date": "2025-04-10T04:52:09.115Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-10T04:52:09.115Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67f866e079af5f1c72e28625"
+  },
+  "quantity": 1,
+  "productId": {
+    "$oid": "67d82ac17e9cafe3091160cb"
+  },
+  "importDay": {
+    "$date": "2025-04-11T00:48:32.373Z"
+  },
+  "description": "Nhập một tai nghe Sony",
+  "createdAt": {
+    "$date": "2025-04-11T00:48:32.394Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-11T00:48:32.394Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680db144cc54126948fb7249"
+  },
+  "quantity": 1,
+  "productId": {
+    "$oid": "67eac43932308a3f23435650"
+  },
+  "importDay": {
+    "$date": "2025-04-27T04:23:32.478Z"
+  },
+  "description": "nhap mot san pham 27/4",
+  "createdAt": {
+    "$date": "2025-04-27T04:23:32.489Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-27T04:23:32.489Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "682055fa0ba0c63e01294f54"
+  },
+  "quantity": 3,
+  "productId": {
+    "$oid": "6815c88e369c76f675c51bfe"
+  },
+  "importDay": {
+    "$date": "2025-05-11T07:47:06.586Z"
+  },
+  "description": "nhap 3 san pham 11/05\n",
+  "createdAt": {
+    "$date": "2025-05-11T07:47:06.607Z"
+  },
+  "updatedAt": {
+    "$date": "2025-05-11T07:47:06.607Z"
+  },
+  "__v": 0
+}]
